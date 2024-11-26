@@ -12,7 +12,7 @@ app = Client("absenbot", api_id=config.API_ID, api_hash=config.API_HASH, bot_tok
 app.add_handler(filters.command("start"), handle_start)
 
 # Mengonfigurasi handler untuk klik tombol (callback_query)
-app.add_handler(filters.CallbackQuery, handle_button_click)
+app.add_handler(filters.CallbackQuery(), handle_button_click)
 
 # Fungsi shutdown handler untuk menangani SIGINT atau SIGTERM
 async def shutdown_handler(signal, loop):
