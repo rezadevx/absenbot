@@ -1,66 +1,30 @@
-import os
+# absenbot.py
+
+import asyncio
+import aiosignal
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-import config  # Mengimpor konfigurasi dari config.py
-
-# Membaca konfigurasi dari file config.py
-api_id = config.API_ID
-api_hash = config.API_HASH
-bot_token = config.BOT_TOKEN
-database_file = config.DATABASE_FILE  # Lokasi file data absen
-
-# Fungsi untuk menyimpan data absen ke file teks
-def save_absen(user_id, username, absen_time):
-    with open(database_file, 'a') as f:  # Gunakan 'a' untuk append data baru
-        f.write(f"{user_id}|{username}|{absen_time}\n")
-
-# Fungsi untuk memeriksa apakah user sudah absen
-def is_user_absent(user_id):
-    if not os.path.exists(database_file):
-        return False
-    with open(database_file, 'r') as f:
-        for line in f:
-            if line.startswith(str(user_id) + "|"):
-                return True
-    return False
+import signal
+from handler import handle_start, handle_button_click
+import config
 
 # Membuat aplikasi bot
-app = Client("absenbot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
+app = Client("absenbot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
 
-# Fungsi untuk mengirim pesan dengan tombol absen
-@app.on_message(filters.command("start"))
-async def start(client, message):
-    # Membuat tombol centang hijau untuk absen
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("✔ Absen Sekarang", callback_data="absen")]
-        ]
-    )
+# Mengonfigurasi handler untuk pesan "start"
+app.add_handler(filters.command("start"), handle_start)
 
-    # Mengirim pesan dengan tombol absen
-    await message.reply(
-        "Selamat datang! Tekan tombol di bawah untuk melakukan absen.",
-        reply_markup=keyboard
-    )
+# Mengonfigurasi handler untuk klik tombol
+app.add_handler(filters.callback_query(), handle_button_click)
 
-# Fungsi untuk menangani klik tombol
-@app.on_callback_query()
-async def handle_button_click(client, callback_query):
-    user_id = callback_query.from_user.id
-    username = callback_query.from_user.username or callback_query.from_user.first_name
-    absen_time = callback_query.message.date.strftime("%Y-%m-%d %H:%M:%S")
+# Signal handler untuk shutdown
+async def shutdown_handler():
+    print("Bot is shutting down...")
+    await app.stop()  # Memberhentikan bot dengan aman
 
-    # Cek apakah user sudah absen
-    if is_user_absent(user_id):
-        await callback_query.answer(f"{username}, kamu sudah absen sebelumnya.")
-    else:
-        # Menyimpan data absen user baru
-        save_absen(user_id, username, absen_time)
-        await callback_query.answer(f"Absen berhasil tercatat untuk {username}!")
-    
-    # Memberikan pesan tambahan di chat
-    await callback_query.message.reply(f"Terima kasih {callback_query.from_user.first_name}, absen kamu telah tercatat!")
+# Menambahkan signal handler untuk shutdown menggunakan aiosignal
+aiosignal.signal(signal.SIGINT, shutdown_handler)
+aiosignal.signal(signal.SIGTERM, shutdown_handler)
 
 # Menjalankan aplikasi bot
 if __name__ == "__main__":
-    app.run()  # Menggunakan app.run() untuk menjalankan bot
+    app.run()  # Menjalankan bot menggunakan asyncio
