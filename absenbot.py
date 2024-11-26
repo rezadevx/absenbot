@@ -1,5 +1,4 @@
-
-import json
+import os
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import config  # Mengimpor konfigurasi dari config.py
@@ -8,20 +7,23 @@ import config  # Mengimpor konfigurasi dari config.py
 api_id = config.API_ID
 api_hash = config.API_HASH
 bot_token = config.BOT_TOKEN
-database_file = config.DATABASE_FILE
+database_file = config.DATABASE_FILE  # Menggunakan file teks untuk penyimpanan data absen
 
-# Membaca data absen dari file JSON (jika ada)
+# Membaca data absen dari file teks
 def load_absen_data():
-    try:
+    absen_data = {}
+    if os.path.exists(database_file):
         with open(database_file, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
+            for line in f:
+                user_id, username, absen_time = line.strip().split('|')
+                absen_data[int(user_id)] = {"username": username, "absen_time": absen_time}
+    return absen_data
 
-# Menyimpan data absen ke file JSON
+# Menyimpan data absen ke file teks
 def save_absen_data(absen_data):
     with open(database_file, 'w') as f:
-        json.dump(absen_data, f, indent=4)
+        for user_id, data in absen_data.items():
+            f.write(f"{user_id}|{data['username']}|{data['absen_time']}\n")
 
 # Membuat aplikasi bot
 app = Client("absenbot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
@@ -60,7 +62,7 @@ async def handle_button_click(client, callback_query):
                 "absen_time": callback_query.message.date.strftime("%Y-%m-%d %H:%M:%S")
             }
 
-            # Menyimpan data absen ke file
+            # Menyimpan data absen ke file teks
             save_absen_data(absen_data)
 
             # Menanggapi klik tombol dan mencatat bahwa pengguna sudah absen
