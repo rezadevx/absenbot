@@ -7,23 +7,22 @@ import config  # Mengimpor konfigurasi dari config.py
 api_id = config.API_ID
 api_hash = config.API_HASH
 bot_token = config.BOT_TOKEN
-database_file = config.DATABASE_FILE  # Menggunakan file teks untuk penyimpanan data absen
+database_file = config.DATABASE_FILE  # Lokasi file data absen
 
-# Membaca data absen dari file teks
-def load_absen_data():
-    absen_data = {}
-    if os.path.exists(database_file):
-        with open(database_file, 'r') as f:
-            for line in f:
-                user_id, username, absen_time = line.strip().split('|')
-                absen_data[int(user_id)] = {"username": username, "absen_time": absen_time}
-    return absen_data
+# Fungsi untuk menyimpan data absen ke file teks
+def save_absen(user_id, username, absen_time):
+    with open(database_file, 'a') as f:  # Gunakan 'a' untuk append data baru
+        f.write(f"{user_id}|{username}|{absen_time}\n")
 
-# Menyimpan data absen ke file teks
-def save_absen_data(absen_data):
-    with open(database_file, 'w') as f:
-        for user_id, data in absen_data.items():
-            f.write(f"{user_id}|{data['username']}|{data['absen_time']}\n")
+# Fungsi untuk memeriksa apakah user sudah absen
+def is_user_absent(user_id):
+    if not os.path.exists(database_file):
+        return False
+    with open(database_file, 'r') as f:
+        for line in f:
+            if line.startswith(str(user_id) + "|"):
+                return True
+    return False
 
 # Membuat aplikasi bot
 app = Client("absenbot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
@@ -47,31 +46,20 @@ async def start(client, message):
 # Fungsi untuk menangani klik tombol
 @app.on_callback_query()
 async def handle_button_click(client, callback_query):
-    if callback_query.data == "absen":
-        # Memuat data absen yang sudah ada
-        absen_data = load_absen_data()
+    user_id = callback_query.from_user.id
+    username = callback_query.from_user.username or callback_query.from_user.first_name
+    absen_time = callback_query.message.date.strftime("%Y-%m-%d %H:%M:%S")
 
-        # Mencatat absen untuk user yang klik tombol
-        user_id = callback_query.from_user.id
-        username = callback_query.from_user.username or callback_query.from_user.first_name
-
-        # Pastikan user belum absen
-        if user_id not in absen_data:
-            absen_data[user_id] = {
-                "username": username,
-                "absen_time": callback_query.message.date.strftime("%Y-%m-%d %H:%M:%S")
-            }
-
-            # Menyimpan data absen ke file teks
-            save_absen_data(absen_data)
-
-            # Menanggapi klik tombol dan mencatat bahwa pengguna sudah absen
-            await callback_query.answer(f"Absen berhasil tercatat untuk {username}!")
-        else:
-            await callback_query.answer(f"{username}, kamu sudah absen sebelumnya.")
-
-        # Memberikan pesan tambahan di chat
-        await callback_query.message.reply(f"Terima kasih {callback_query.from_user.first_name}, absen kamu telah tercatat!")
+    # Cek apakah user sudah absen
+    if is_user_absent(user_id):
+        await callback_query.answer(f"{username}, kamu sudah absen sebelumnya.")
+    else:
+        # Menyimpan data absen user baru
+        save_absen(user_id, username, absen_time)
+        await callback_query.answer(f"Absen berhasil tercatat untuk {username}!")
+    
+    # Memberikan pesan tambahan di chat
+    await callback_query.message.reply(f"Terima kasih {callback_query.from_user.first_name}, absen kamu telah tercatat!")
 
 # Menjalankan aplikasi bot
 if __name__ == "__main__":
