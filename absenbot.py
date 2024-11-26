@@ -1,3 +1,4 @@
+
 import asyncio
 import aiosignal
 from pyrogram import Client, filters
@@ -12,7 +13,7 @@ app = Client("absenbot", api_id=config.API_ID, api_hash=config.API_HASH, bot_tok
 app.add_handler(filters.command("start"), handle_start)
 
 # Mengonfigurasi handler untuk klik tombol (callback_query)
-app.add_handler(filters.callback_query(), handle_button_click)  # Perbaiki di sini
+app.add_handler(filters.CallbackQuery(), handle_button_click)  # Menggunakan filters.CallbackQuery tanpa tanda kurung
 
 # Signal handler untuk shutdown
 async def shutdown_handler():
