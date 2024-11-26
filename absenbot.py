@@ -1,12 +1,11 @@
-import logging
-import uvloop  # Import uvloop
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 import config
-import asyncio  # Import asyncio
 
 # Setup logging
+import logging
 logging.basicConfig(level=logging.INFO)
 
 # Inisialisasi bot
@@ -61,11 +60,14 @@ async def daftar_absen(client, message: Message):
     daftar = "\n".join([f"{data['name']} - {data['waktu']}" for data in absen_data.values()])
     await message.reply(f"Daftar absen:\n{daftar}")
 
-# Fungsi utama untuk menjalankan bot
-def main():
-    # Menggunakan uvloop
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())  # Set event loop ke uvloop
-    app.run()  # Tidak perlu menambahkan timeout
+# Fungsi utama untuk menjalankan bot menggunakan asyncio
+async def main():
+    # Menjalankan bot dan menjalankan client secara asynchronous
+    await app.start()
+    logging.info("Bot is running")
+    
+    # Menunggu bot beroperasi terus-menerus
+    await asyncio.gather(app.idle())  # Menunggu bot sampai berhenti
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())  # Menjalankan event loop dengan asyncio.run
