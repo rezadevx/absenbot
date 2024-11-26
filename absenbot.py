@@ -4,7 +4,6 @@ from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 import config
-from pyromod import listen
 import asyncio  # Import asyncio
 
 # Setup logging
@@ -52,8 +51,8 @@ async def absen_button(client, callback_query):
         except Exception as e:
             logging.error(f"Error saat mem-pin pesan: {e}")
 
-# Menggunakan pyromod listen untuk menangani perintah lain secara efisien
-@listen(filters.command("daftarabsen"))
+# Fungsi untuk menangani daftar absen
+@app.on_message(filters.command("daftarabsen"))
 async def daftar_absen(client, message: Message):
     if not absen_data:
         await message.reply("Belum ada yang absen.")
