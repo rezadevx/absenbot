@@ -1,4 +1,6 @@
 
+
+
 # absenbot.py
 import asyncio
 import signal
@@ -12,8 +14,8 @@ app = Client("absenbot", api_id=config.API_ID, api_hash=config.API_HASH, bot_tok
 # Menambahkan handler untuk perintah /start
 app.add_handler(filters.command("start"), handle_start)
 
-# Menambahkan handler untuk callback query
-app.add_handler(filters.CallbackQuery(), handle_button_click)
+# Menambahkan handler untuk callback query tanpa tanda kurung
+app.add_handler(filters.callback_query, handle_button_click)  # Perbaikan di sini
 
 # Fungsi shutdown handler untuk menangani SIGINT atau SIGTERM
 async def shutdown_handler(signal, loop):
