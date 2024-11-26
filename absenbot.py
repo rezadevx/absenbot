@@ -74,11 +74,8 @@ async def handle_button_click(client, callback_query):
 
 # Fungsi utama untuk menjalankan bot
 async def main():
-    # Jalankan bot
-    await app.start()
-
-    print("Bot sedang berjalan...")
-    await app.idle()  # Menunggu sampai bot berhenti
+    # Jalankan bot menggunakan app.run()
+    app.run()  # app.run() menangani event loop dan menjaga bot tetap aktif
 
 # Menjalankan event loop menggunakan asyncio.run
 if __name__ == "__main__":
