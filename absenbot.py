@@ -65,7 +65,7 @@ async def daftar_absen(client, message: Message):
 def main():
     # Menggunakan uvloop
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())  # Set event loop ke uvloop
-    app.run(timeout=60)  # Menambahkan timeout lebih lama
+    app.run()  # Tidak perlu menambahkan timeout
 
 if __name__ == "__main__":
     main()
