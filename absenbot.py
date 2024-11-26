@@ -1,3 +1,5 @@
+
+import asyncio
 import json
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -70,6 +72,14 @@ async def handle_button_click(client, callback_query):
         # Memberikan pesan tambahan di chat
         await callback_query.message.reply(f"Terima kasih {callback_query.from_user.first_name}, absen kamu telah tercatat!")
 
-# Menjalankan bot menggunakan app.run()
+# Fungsi utama untuk menjalankan bot
+async def main():
+    # Jalankan bot
+    await app.start()
+
+    print("Bot sedang berjalan...")
+    await app.idle()  # Menunggu sampai bot berhenti
+
+# Menjalankan event loop menggunakan asyncio.run
 if __name__ == "__main__":
-    app.run()  # app.run() sudah menangani event loop
+    asyncio.run(main())  # Menjalankan event loop dengan asyncio.run()
