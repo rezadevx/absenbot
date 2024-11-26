@@ -7,11 +7,11 @@ import config
 # Membuat aplikasi bot
 app = Client("absenbot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
 
-# Mengonfigurasi handler untuk pesan "start"
-app.add_handler(filters.command("start"), handle_start)
+# Mengonfigurasi handler untuk pesan "start" dengan prioritas
+app.add_handler(filters.command("start"), handle_start, group=1)  # Menambahkan group untuk prioritas
 
-# Mengonfigurasi handler untuk klik tombol (callback_query)
-app.add_handler(filters.CallbackQuery, handle_button_click)  # Pastikan menggunakan filters.CallbackQuery tanpa tanda kurung
+# Mengonfigurasi handler untuk klik tombol (callback_query) dengan prioritas
+app.add_handler(filters.CallbackQuery, handle_button_click, group=2)  # Menambahkan group untuk prioritas
 
 # Fungsi shutdown handler untuk menangani SIGINT atau SIGTERM
 async def shutdown_handler(signal, loop):
